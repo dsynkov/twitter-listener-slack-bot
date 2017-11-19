@@ -41,9 +41,4 @@ Now, the actual bot commands are in the `alertbot.py` while the Twitter listener
 
 The bot should now be up and running. If a Tweet from one of your selected users matches your keyword criteria, you should receive a similar notification as below. (In this instance, user **@lildresodmg1** tweeted the keywords `'tesla','semi'` and `'roadster'`.) You can customize the alert message by editing the `Alertbot()` class's `self.template` attribute in `alertbot.py`.
 
-![Alt text](/screenshots/message.png?raw=true "Invite")
-
-
-```python
-
-```
+![Alt text](/screenshots/message.PNG?raw=true "Invite")
