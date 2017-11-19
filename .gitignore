@@ -1,0 +1,5 @@
+*.localenv
+*.ipynb
+,ipynb_checkpoints/
+__pycache__/
+print_bot_id.py
