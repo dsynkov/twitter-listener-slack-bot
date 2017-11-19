@@ -33,7 +33,7 @@ Configure the two files in the `static` sub-directory to set your search paramet
 
 After configuring your bot (I've named mine `alertbot`; you can chose any name you want) invite it into your Slack channel. The bot will work in multiple channels, but not in direct conversations.
 
-![image.png](attachment:image.png)
+![Alt text](/screenshots/invite.png?raw=true "Invite")
 
 Now, the actual bot commands are in the `alertbot.py` while the Twitter listener is in `listener.py`. After selecting your `users` and `keywords` in the respective **`/static`** sub-directory files, run the following command from your terminal.
 
@@ -41,4 +41,9 @@ Now, the actual bot commands are in the `alertbot.py` while the Twitter listener
 
 The bot should now be up and running. If a Tweet from one of your selected users matches your keyword criteria, you should receive a similar notification as below. (In this instance, user **@lildresodmg1** tweeted the keywords `'tesla','semi'` and `'roadster'`.) You can customize the alert message by editing the `Alertbot()` class's `self.template` attribute in `alertbot.py`.
 
-![image.png](attachment:image.png)
+![Alt text](/screenshots/message.png?raw=true "Invite")
+
+
+```python
+
+```
