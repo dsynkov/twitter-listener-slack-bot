@@ -30,12 +30,14 @@ class StdOutListener(StreamListener):
         if 'text' in tweet.keys():
             content = tweet['text']
             alert_message = bot.parse_listener_output(tweet,content)
-        
-        if alert_message:
-        
-            bot.post_message(alert_message)
-        
-            print(alert_message)
+            
+        try:
+            if alert_message:
+                bot.post_message(alert_message)
+                print(alert_message)
+                
+        except UnboundLocalError:
+            pass
 
     def on_error(self,status):
         print(status)
