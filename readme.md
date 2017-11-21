@@ -25,7 +25,13 @@ To get started you'll need to create a Slack bot ("Custom Integration") and a Tw
 
 `export SLACK_BOT_TOKEN="YOUR SLACK_BOT_TOKEN HERE"`
 
-`export SLACK_BOT_ID="YOUR SLACK_BOT_ID HERE"`
+`export SLACK_BOT_ID="YOUR SLACK_BOT_NAME HERE"`
+
+You can select whatever name you want when you create the bot as a Slack "Custom Integration".
+
+Then simply import the required packages (`tweepy` and `slackclient`) with:
+
+`$ pip install -r requirements.txt`
 
 ## Setting the Search Parameters
 

@@ -9,13 +9,14 @@ class Alertbot:
     def __init__(self):
         
         self.SLACK_BOT_TOKEN = os.environ.get('SLACK_BOT_TOKEN')
-        self.SLACK_BOT_ID = os.environ.get('SLACK_BOT_ID')
-        
-        self.users = self.get_users()
-        self.keywords = self.get_keywords()
-        
+        self.SLACK_BOT_NAME = os.environ.get('SLACK_BOT_NAME')
+
         global sc
         sc = SlackClient(self.SLACK_BOT_TOKEN)
+        
+        self.SLACK_BOT_ID = self.get_bot_id()
+        self.users = self.get_users()
+        self.keywords = self.get_keywords()
           
         self.template = '''
 Hey there! User *@{}* tweeted about {} on {} at {}: \n 
@@ -35,6 +36,15 @@ View the full URL here: \n
             current_time).strftime('%I:%M %p')
 
         return [date,hour]
+
+    def get_bot_id(self):
+    
+        users = sc.api_call('users.list')
+        members = users['members']
+
+        for member in members:
+            if member['name'] == self.SLACK_BOT_NAME:
+                return member['id']
         
     def get_users(self):
 
