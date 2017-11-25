@@ -1,5 +1,6 @@
 import os
 import sqlite3
+import pathlib
 
 def create_connection(database):
     try:
@@ -13,11 +14,13 @@ def create_connection(database):
 def create_table(database):
     
     # Get sql syntax from db sub-directory
-    alerts_table_file = open(os.getcwd() + '//db//alerts-table.txt','r')
-    alerts_table = alerts_table_file.read().replace('\n','')
+    path = pathlib.PurePath(os.getcwd())
+    filepath = path / 'static' / 'alerts-table.txt'
+    file = open(filepath,'r')
+    alerts_table = file.read().replace('\n','')
     
     # Close out sql syntax file 
-    alerts_table_file.close()  
+    file.close()  
     
     # Create connection and tables
     conn = create_connection(database)

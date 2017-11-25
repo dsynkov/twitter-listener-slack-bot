@@ -6,9 +6,8 @@ import json
 import os
 import time
 
-# Import custom packages
 from alertbot import Alertbot
-import sqlcommands
+import sqlutils
 
 CONSUMER_KEY = os.environ.get('CONSUMER_KEY')
 CONSUMER_SECRET = os.environ.get('CONSUMER_SECRET')
@@ -30,7 +29,7 @@ class StdOutListener(StreamListener):
                         tweet,content)
                         
                     # Commit message to db
-                    sqlcommands.commit_alert(conn,alert_message_db)
+                    sqlutils.commit_alert(conn,alert_message_db)
                 
                 except TypeError:
                     pass 
@@ -67,8 +66,8 @@ if __name__ == '__main__':
             database = bot.get_db_filepath()
         
             # Establish sqlite db connection 
-            conn = sqlcommands.create_connection(database)
-            sqlcommands.create_table(database)
+            conn = sqlutils.create_connection(database)
+            sqlutils.create_table(database)
     
     l = StdOutListener()
     

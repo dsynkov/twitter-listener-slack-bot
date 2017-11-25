@@ -1,11 +1,11 @@
 from slackclient import SlackClient
 from datetime import datetime
+import pathlib
 import time
 import os
 import sys
 
-# Import custom packages
-import sqlcommands
+import sqlutils
 
 class Alertbot:
     
@@ -60,12 +60,11 @@ View the full URL here: \n
         
         timestamp = self.get_db_timestamp()
         
-        db_path = os.getcwd() + '\\db\\'
-        db_name = 'alerts-{}'.format(timestamp) 
+        path = pathlib.PurePath(os.getcwd())
         
-        db_filepath = db_path + db_name + '.db'
+        db_filepath = path / 'db' / 'alerts-{}.db'.format(timestamp) 
         
-        return db_filepath
+        return str(db_filepath)
 
     def get_bot_id(self):
     
@@ -77,8 +76,9 @@ View the full URL here: \n
                 return member['id']
         
     def get_users(self):
-
-        filepath = os.getcwd() + '\\static\\users.csv'
+        
+        path = pathlib.PurePath(os.getcwd())
+        filepath = path / 'static' / 'users.csv'
 
         users_file = open(filepath,'r')
         users = users_file.read().splitlines()       
@@ -91,7 +91,8 @@ View the full URL here: \n
         
     def get_keywords(self):
     
-        filepath = os.getcwd() + '\\static\\keywords.csv'
+        path = pathlib.PurePath(os.getcwd())
+        filepath = path / 'static' / 'keywords.csv'
 
         keywords_file = open(filepath,'r')
         keywords = keywords_file.read().splitlines()
