@@ -62,7 +62,7 @@ if __name__ == '__main__':
         
             commit_to_db = True
         
-            # Get auto-generated gb filepath 
+            # Get auto-generated db filepath 
             database = bot.get_db_filepath()
         
             # Establish sqlite db connection 
