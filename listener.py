@@ -1,10 +1,14 @@
 from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
 from tweepy import Stream
-from alertbot import Alertbot
+import sys
 import json
 import os
 import time
+
+# Import custom packages
+from alertbot import Alertbot
+import sqlcommands
 
 CONSUMER_KEY = os.environ.get('CONSUMER_KEY')
 CONSUMER_SECRET = os.environ.get('CONSUMER_SECRET')
@@ -14,27 +18,33 @@ OWNER = os.environ.get('OWNER')
 OWNER_ID = os.environ.get('OWNER_ID')
 
 class StdOutListener(StreamListener):
-    
-    def get_timestamp(self):
-        
-        current_time = time.time()
-        current_timestamp = datetime.fromtimestamp(
-            current_time).strftime('%Y-%m-%d %H:%M:%S')
-        
-        return current_timestamp
-    
+       
     def on_data(self, data):
-        
         tweet = json.loads(data)
-        
         if 'text' in tweet.keys():
             content = tweet['text']
-            alert_message = bot.parse_listener_output(tweet,content)
-            
+            if commit_to_db:
+                try:
+                    # Get both the slack and db verions of the alert message 
+                    alert_message_slack, alert_message_db = bot.parse_listener_output(
+                        tweet,content)
+                        
+                    # Commit message to db
+                    sqlcommands.commit_alert(conn,alert_message_db)
+                
+                except TypeError:
+                    pass 
+                    
+            else:
+                # Get only the slack version of the alert message
+                alert_message_slack = bot.parse_listener_output(tweet,content)
+                       
         try:
-            if alert_message:
-                bot.post_message(alert_message)
-                print(alert_message)
+            if alert_message_slack:
+                # Post message to slack channel
+                bot.post_message(alert_message_slack)
+                # Print message to terminal 
+                print(alert_message_slack)
                 
         except UnboundLocalError:
             pass
@@ -45,6 +55,20 @@ class StdOutListener(StreamListener):
 if __name__ == '__main__':
     
     bot = Alertbot()
+    
+    commit_to_db = False
+    
+    if len(sys.argv) > 1:
+        if sys.argv[1] == '-db':
+        
+            commit_to_db = True
+        
+            # Get auto-generated gb filepath 
+            database = bot.get_db_filepath()
+        
+            # Establish sqlite db connection 
+            conn = sqlcommands.create_connection(database)
+            sqlcommands.create_table(database)
     
     l = StdOutListener()
     

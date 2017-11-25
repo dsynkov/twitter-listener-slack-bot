@@ -1,0 +1,11 @@
+CREATE TABLE IF NOT EXISTS alerts (
+tweet_id text PRIMARY KEY,
+timestamp datetime NOT NULL,
+screen_name text NOT NULL,
+matches integer NOT NULL,
+matches_count text NOT NULL,
+date text NOT NULL,
+time text NOT NULL,
+content text NOT NULL,
+url text NOT NULL
+);

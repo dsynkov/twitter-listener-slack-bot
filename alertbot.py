@@ -1,8 +1,11 @@
 from slackclient import SlackClient
 from datetime import datetime
-import glob
 import time
 import os
+import sys
+
+# Import custom packages
+import sqlcommands
 
 class Alertbot:
     
@@ -10,22 +13,21 @@ class Alertbot:
         
         self.SLACK_BOT_TOKEN = os.environ.get('SLACK_BOT_TOKEN')
         self.SLACK_BOT_NAME = os.environ.get('SLACK_BOT_NAME')
-
-        global sc
-        sc = SlackClient(self.SLACK_BOT_TOKEN)
+        
+        self.sc = SlackClient(self.SLACK_BOT_TOKEN)
         
         self.SLACK_BOT_ID = self.get_bot_id()
         self.users = self.get_users()
         self.keywords = self.get_keywords()
           
-        self.template = '''
+        self.slack_template = '''
 Hey there! User *@{}* tweeted about {} on {} at {}: \n 
 "{}" \n 
 View the full URL here: \n 
 {} 
 '''
     
-    def get_timestamp(self):
+    def get_tweet_timestamp(self):
 
         current_time = time.time()
 
@@ -36,10 +38,38 @@ View the full URL here: \n
             current_time).strftime('%I:%M %p')
 
         return [date,hour]
+    
+    def get_db_timestamp(self):
+
+        current_time = time.time()
+
+        date = datetime.fromtimestamp(
+            current_time).strftime('%Y-%m-%d-%I-%M-%S')
+
+        return date
+        
+    def get_iso_timestamp(self):
+        
+        current_time = time.time()
+        iso_timestamp = datetime.fromtimestamp(
+            current_time).strftime('%Y-%m-%d %H:%M:%S')
+        
+        return iso_timestamp
+    
+    def get_db_filepath(self):
+        
+        timestamp = self.get_db_timestamp()
+        
+        db_path = os.getcwd() + '\\db\\'
+        db_name = 'alerts-{}'.format(timestamp) 
+        
+        db_filepath = db_path + db_name + '.db'
+        
+        return db_filepath
 
     def get_bot_id(self):
     
-        users = sc.api_call('users.list')
+        users = self.sc.api_call('users.list')
         members = users['members']
 
         for member in members:
@@ -74,7 +104,7 @@ View the full URL here: \n
     
     def get_bot_channels(self):
 
-        channels = sc.api_call(
+        channels = self.sc.api_call(
             'channels.list',
             exclude_archived=1
         )
@@ -89,6 +119,20 @@ View the full URL here: \n
                 
         return memberships
     
+    def parse_matches(self,content):
+        
+        # Find out which keywords were picked up
+        matches = []
+        for word in self.keywords:
+            if word.lower() in content.lower():
+                matches.append(word)
+                
+        return matches
+    
+    def count_matches(self, matches):
+        # Count number of keywords picked up
+        return len(matches)
+    
     def parse_listener_output(self,tweet,content):
 
         if any(word.lower() in content.lower() for word in self.keywords):
@@ -96,20 +140,20 @@ View the full URL here: \n
             # Retrieve essentials
             user = tweet['user']
             screen_name = user['screen_name']
-            timestamp = self.get_timestamp()
+            timestamp = self.get_tweet_timestamp()
 
             # Create the tweet url
             base = 'https://twitter.com/'
             url = base + screen_name + '/status/' + str(tweet['id'])
 
             # Find which keyword was picked up
-            matches = []
-            for word in self.keywords:
-                if word.lower() in content.lower():
-                    matches.append(word)
+            matches = self.parse_matches(content)
+            
+            # Get count of matches picked up
+            matches_count = self.count_matches(matches)
             
             # Craft alert message
-            alert_message = self.template.format(
+            alert_message_slack = self.slack_template.format(
                 screen_name,
                 matches,
                 timestamp[0],
@@ -117,16 +161,39 @@ View the full URL here: \n
                 content,
                 url
             )
+            
+            if len(sys.argv) > 1:
+                if sys.argv[1] == '-db':
+                
+                    # Get datetime var to use as PK for db 
+                    iso_timestamp = self.get_iso_timestamp()
+                
+                    # Flatten list to avoid any confusion w/ double or single quotes
+                    matches_string = ''.join(str(match) for match in matches)
+                    
+                    alert_message_db = (
+                        tweet['id'],
+                        iso_timestamp,
+                        screen_name,
+                        matches_string,
+                        matches_count,
+                        timestamp[0],
+                        timestamp[1],
+                        content,
+                        url
+                    )
 
-            return alert_message
+                    return (alert_message_slack,alert_message_db)
+            else:
+                return alert_message_slack
     
     def post_message(self,message):
         
         channels = self.get_bot_channels()
-        timestamp = self.get_timestamp()
+        timestamp = self.get_tweet_timestamp()
         
         for channel in channels:
-            sc.api_call(
+            self.sc.api_call(
                 "chat.postMessage",
                 channel=channel,
                 text=message,
@@ -137,4 +204,4 @@ View the full URL here: \n
             len(channels),
             timestamp[0],
             timestamp[1]
-            ))
+        ))
