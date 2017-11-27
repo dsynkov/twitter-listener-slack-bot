@@ -19,6 +19,7 @@ class Alertbot:
         self.SLACK_BOT_ID = self.get_bot_id()
         self.users = self.get_users()
         self.keywords = self.get_keywords()
+        self.channels = self.get_bot_channels()
           
         self.slack_template = '''
 Hey there! User *@{}* tweeted about {} on {} at {}: \n 
@@ -190,7 +191,7 @@ View the full URL here: \n
     
     def post_message(self,message):
         
-        channels = self.get_bot_channels()
+        channels = self.channels
         timestamp = self.get_tweet_timestamp()
         
         for channel in channels:
